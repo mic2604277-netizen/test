@@ -1,0 +1,23 @@
+[
+  {
+    "name": "New Delhi",
+    "latitude": 28.6139,
+    "longitude": 77.209,
+    "type": "City",
+    "description": "Capital of India"
+  },
+  {
+    "name": "Mumbai",
+    "lat": 19.076,
+    "lng": 72.8777,
+    "type": "City",
+    "description": "Financial center"
+  },
+  {
+    "name": "Bengaluru",
+    "latitude": 12.9716,
+    "longitude": 77.5946,
+    "type": "City",
+    "description": "Technology hub"
+  }
+]
