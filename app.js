@@ -12,7 +12,6 @@ const fileInput = document.getElementById("jsonFile");
 const statusBox = document.getElementById("status");
 const placesList = document.getElementById("placesList");
 
-const WORKER_PARSE_THRESHOLD_MB = 8;
 const MAX_MARKERS = 10000;
 const MAX_LIST_ITEMS = 500;
 const RENDER_CHUNK_SIZE = 250;
@@ -30,11 +29,13 @@ fileInput.addEventListener("change", async (event) => {
 
   markerLayer.clearLayers();
   placesList.innerHTML = "";
-
+  setStatus("Reading file…");
 
   try {
     setStatus("Reading file…");
-    const places = await loadPlacesFromFile(file);
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const places = Array.isArray(data) ? data : (data.places ?? data.table ?? data.Table);
 
     if (!Array.isArray(places)) {
       throw new Error("JSON must be an array or contain a top-level 'places' or 'Table' array.");
@@ -48,25 +49,16 @@ fileInput.addEventListener("change", async (event) => {
   }
 });
 
-
 async function loadPlacesFromFile(file) {
   const text = await file.text();
-  const useWorker = file.size >= WORKER_PARSE_THRESHOLD_MB * 1024 * 1024 && typeof Worker !== "undefined";
 
-  if (!useWorker) {
-    return normalizePlacesPayload(JSON.parse(text));
+  if (window.Worker) {
+    return parseJsonInWorker(text);
   }
 
-  setStatus("Parsing large JSON in background…");
-
-  try {
-    return await parseJsonInWorker(text);
-  } catch (error) {
-    setStatus("Background parse failed, retrying in main thread…");
-    await nextFrame();
-    return normalizePlacesPayload(JSON.parse(text));
-  }
-}
+  places.forEach((place, index) => {
+    const lat = toNumber(place.latitude ?? place.lat ?? place.Lat);
+    const lng = toNumber(place.longitude ?? place.lng ?? place.lon ?? place.long ?? place.Lng ?? place.Lon ?? place.Long);
 
 function parseJsonInWorker(text) {
   return new Promise((resolve, reject) => {
@@ -100,7 +92,7 @@ function parseJsonInWorker(text) {
     worker.onerror = () => {
       URL.revokeObjectURL(workerUrl);
       worker.terminate();
-      reject(new Error("Worker parse failed."));
+      reject(new Error("Failed to parse JSON in worker."));
     };
 
     worker.postMessage(text);
@@ -135,7 +127,11 @@ async function renderPlaces(places) {
 
       if (renderedMarkers < MAX_MARKERS) {
         bounds.push([lat, lng]);
-        const marker = L.circleMarker([lat, lng], { radius: 5, weight: 1, fillOpacity: 0.8 }).addTo(markerLayer);
+        const marker = L.circleMarker([lat, lng], {
+          radius: 5,
+          weight: 1,
+          fillOpacity: 0.8,
+        }).addTo(markerLayer);
         marker.bindPopup(buildPopup(place, lat, lng));
         renderedMarkers += 1;
       }
@@ -163,10 +159,16 @@ async function renderPlaces(places) {
     map.fitBounds(bounds, { padding: [30, 30] });
   }
 
-  const markerLimitNote = validCount > MAX_MARKERS ? ` Showing first ${MAX_MARKERS.toLocaleString()} markers.` : "";
-  const listLimitNote = validCount > MAX_LIST_ITEMS ? ` List is capped at ${MAX_LIST_ITEMS.toLocaleString()} rows.` : "";
+  const markerLimitNote = validCount > MAX_MARKERS
+    ? ` Showing first ${MAX_MARKERS.toLocaleString()} markers.`
+    : "";
+  const listLimitNote = validCount > MAX_LIST_ITEMS
+    ? ` List is capped at ${MAX_LIST_ITEMS.toLocaleString()} rows.`
+    : "";
 
-  setStatus(`Loaded ${validCount.toLocaleString()} valid place${validCount > 1 ? "s" : ""}.${markerLimitNote}${listLimitNote}`);
+  setStatus(
+    `Loaded ${validCount.toLocaleString()} valid place${validCount > 1 ? "s" : ""}.${markerLimitNote}${listLimitNote}`
+  );
 }
 
 function nextFrame() {
@@ -176,7 +178,7 @@ function nextFrame() {
 function buildPopup(place, lat, lng) {
   const name = place.name ?? place.placeName ?? place.UHouseId ?? "Unnamed place";
   const detailPairs = Object.entries(place)
-    .filter(([key]) => !COORDINATE_KEYS.includes(key))
+    .filter(([key]) => !["latitude", "lat", "Lat", "longitude", "lng", "Lng", "lon", "Lon", "long", "Long"].includes(key))
     .map(([key, value]) => `<div><strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}</div>`)
     .join("");
 
@@ -193,7 +195,7 @@ function buildPopup(place, lat, lng) {
 function buildListItem(place, lat, lng, defaultNameIndex) {
   const name = place.name ?? place.placeName ?? place.UHouseId ?? `Place ${defaultNameIndex}`;
   const details = Object.entries(place)
-    .filter(([key]) => !["name", "placeName", ...COORDINATE_KEYS].includes(key))
+    .filter(([key]) => !["name", "placeName", "latitude", "lat", "Lat", "longitude", "lng", "Lng", "lon", "Lon", "long", "Long"].includes(key))
     .map(([key, value]) => `<div><strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}</div>`)
     .join("");
 
