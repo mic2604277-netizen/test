@@ -22,10 +22,10 @@ fileInput.addEventListener("change", async (event) => {
   try {
     const text = await file.text();
     const data = JSON.parse(text);
-    const places = Array.isArray(data) ? data : data.places;
+    const places = Array.isArray(data) ? data : (data.places ?? data.table ?? data.Table);
 
     if (!Array.isArray(places)) {
-      throw new Error("JSON must be an array or contain a top-level 'places' array.");
+      throw new Error("JSON must be an array or contain a top-level 'places' or 'Table' array.");
     }
 
     renderPlaces(places);
@@ -44,8 +44,8 @@ function renderPlaces(places) {
   let validCount = 0;
 
   places.forEach((place, index) => {
-    const lat = toNumber(place.latitude ?? place.lat);
-    const lng = toNumber(place.longitude ?? place.lng ?? place.lon ?? place.long);
+    const lat = toNumber(place.latitude ?? place.lat ?? place.Lat);
+    const lng = toNumber(place.longitude ?? place.lng ?? place.lon ?? place.long ?? place.Lng ?? place.Lon ?? place.Long);
 
     if (Number.isNaN(lat) || Number.isNaN(lng)) {
       return;
@@ -63,7 +63,7 @@ function renderPlaces(places) {
   });
 
   if (!validCount) {
-    setStatus("No valid places found. Add latitude/longitude or lat/lng to each item.", true);
+    setStatus("No valid places found. Add latitude/longitude, lat/lng, or Lat/Lng to each item.", true);
     return;
   }
 
@@ -79,7 +79,7 @@ function renderPlaces(places) {
 function buildPopup(place, lat, lng) {
   const name = place.name ?? place.placeName ?? "Unnamed place";
   const detailPairs = Object.entries(place)
-    .filter(([key]) => !["latitude", "lat", "longitude", "lng", "lon", "long"].includes(key))
+    .filter(([key]) => !["latitude", "lat", "Lat", "longitude", "lng", "Lng", "lon", "Lon", "long", "Long"].includes(key))
     .map(([key, value]) => `<div><strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}</div>`)
     .join("");
 
@@ -96,7 +96,7 @@ function buildPopup(place, lat, lng) {
 function buildListItem(place, lat, lng, defaultNameIndex) {
   const name = place.name ?? place.placeName ?? `Place ${defaultNameIndex}`;
   const details = Object.entries(place)
-    .filter(([key]) => !["name", "placeName", "latitude", "lat", "longitude", "lng", "lon", "long"].includes(key))
+    .filter(([key]) => !["name", "placeName", "latitude", "lat", "Lat", "longitude", "lng", "Lng", "lon", "Lon", "long", "Long"].includes(key))
     .map(([key, value]) => `<div><strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}</div>`)
     .join("");
 
