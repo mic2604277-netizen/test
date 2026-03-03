@@ -12,8 +12,7 @@ A simple web app that lets you upload a JSON file of places and shows each valid
   - `lat` + `lng`
   - `lat` + `lon`
   - `Lat` + `Lng`
-- Renders map markers in batches to keep the UI responsive for large files.
-- Caps rendering to the first 10,000 markers and 500 list rows (full file is still scanned for valid coordinates).
+- Renders a marker for each valid place.
 - Shows all available details in marker popups and in the left panel list.
 
 ## Run locally

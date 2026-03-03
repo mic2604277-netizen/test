@@ -29,7 +29,9 @@ fileInput.addEventListener("change", async (event) => {
   setStatus("Reading file…");
 
   try {
-    const places = await loadPlacesFromFile(file);
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const places = Array.isArray(data) ? data : (data.places ?? data.table ?? data.Table);
 
     if (!Array.isArray(places)) {
       throw new Error("JSON must be an array or contain a top-level 'places' or 'Table' array.");
@@ -50,9 +52,9 @@ async function loadPlacesFromFile(file) {
     return parseJsonInWorker(text);
   }
 
-  const data = JSON.parse(text);
-  return normalizePlacesPayload(data);
-}
+  places.forEach((place, index) => {
+    const lat = toNumber(place.latitude ?? place.lat ?? place.Lat);
+    const lng = toNumber(place.longitude ?? place.lng ?? place.lon ?? place.long ?? place.Lng ?? place.Lon ?? place.Long);
 
 function parseJsonInWorker(text) {
   return new Promise((resolve, reject) => {
@@ -172,7 +174,7 @@ function nextFrame() {
 function buildPopup(place, lat, lng) {
   const name = place.name ?? place.placeName ?? place.UHouseId ?? "Unnamed place";
   const detailPairs = Object.entries(place)
-    .filter(([key]) => !COORDINATE_KEYS.includes(key))
+    .filter(([key]) => !["latitude", "lat", "Lat", "longitude", "lng", "Lng", "lon", "Lon", "long", "Long"].includes(key))
     .map(([key, value]) => `<div><strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}</div>`)
     .join("");
 
@@ -189,7 +191,7 @@ function buildPopup(place, lat, lng) {
 function buildListItem(place, lat, lng, defaultNameIndex) {
   const name = place.name ?? place.placeName ?? place.UHouseId ?? `Place ${defaultNameIndex}`;
   const details = Object.entries(place)
-    .filter(([key]) => !["name", "placeName", ...COORDINATE_KEYS].includes(key))
+    .filter(([key]) => !["name", "placeName", "latitude", "lat", "Lat", "longitude", "lng", "Lng", "lon", "Lon", "long", "Long"].includes(key))
     .map(([key, value]) => `<div><strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}</div>`)
     .join("");
 
