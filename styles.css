@@ -1,0 +1,97 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f3f5f8;
+  color: #17212b;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  min-height: 100vh;
+}
+
+.panel {
+  padding: 1rem;
+  border-right: 1px solid #d9e0e7;
+  background: #ffffff;
+  overflow: auto;
+}
+
+.upload-label {
+  display: inline-block;
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: #1f6feb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#jsonFile {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.status {
+  margin: 0.5rem 0 1rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: #eef3f8;
+}
+
+.status.error {
+  background: #ffe7e7;
+  color: #8f1414;
+}
+
+.places-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.places-list li {
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+  padding: 0.5rem;
+  background: #fbfdff;
+}
+
+.map-wrap {
+  min-height: 100vh;
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+code {
+  background: #eef3f8;
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(420px, 1fr);
+  }
+
+  .panel {
+    border-right: none;
+    border-bottom: 1px solid #d9e0e7;
+  }
+}
