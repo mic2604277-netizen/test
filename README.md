@@ -6,11 +6,12 @@ A simple web app that lets you upload a JSON file of places and shows each valid
 - Upload a `.json` file from your computer.
 - Supports either:
   - a top-level array of place objects, or
-  - `{ "places": [ ... ] }` format.
+  - `{ "places": [ ... ] }` or `{ "Table": [ ... ] }` format.
 - Accepts multiple coordinate key styles:
   - `latitude` + `longitude`
   - `lat` + `lng`
   - `lat` + `lon`
+  - `Lat` + `Lng`
 - Renders a marker for each valid place.
 - Shows all available details in marker popups and in the left panel list.
 
