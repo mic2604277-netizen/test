@@ -26,3 +26,9 @@ Then open `http://localhost:8000` in your browser.
 
 ## JSON example
 See `sample-places.json` for a working example.
+
+
+## Large file behavior
+- JSON parsing is offloaded to a Web Worker when available, so the main UI stays responsive.
+- For very large inputs (100MB+ or millions of records), the app intentionally limits how many markers/list rows are drawn to prevent browser hangs.
+- Status text reports total valid records found and whether rendering limits were applied.
