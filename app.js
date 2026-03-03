@@ -5,6 +5,9 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
+window.addEventListener("load", () => map.invalidateSize());
+window.addEventListener("resize", () => map.invalidateSize());
+
 const fileInput = document.getElementById("jsonFile");
 const statusBox = document.getElementById("status");
 const placesList = document.getElementById("placesList");
@@ -29,6 +32,7 @@ fileInput.addEventListener("change", async (event) => {
   setStatus("Reading file…");
 
   try {
+    setStatus("Reading file…");
     const text = await file.text();
     const data = JSON.parse(text);
     const places = Array.isArray(data) ? data : (data.places ?? data.table ?? data.Table);
